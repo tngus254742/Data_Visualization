@@ -7,6 +7,10 @@ February 25, 2021
 
 ------------------------------------------------------------------------
 
+``` r
+knitr::opts_chunk$set(fig.path='Figs/')
+```
+
 **Import Libraries**
 
 ``` r
@@ -106,7 +110,7 @@ ggplot(seeds, aes(variety, fill=variety)) + geom_bar(colour="black", size=0.5,
   geom_text(stat='count', aes(label=..count..),color="black", vjust=1.6) 
 ```
 
-![](EDA_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](Figs/unnamed-chunk-6-1.png)<!-- -->
 
 -   There are three types of seeds, that are Canadian, Kama and Rosa.
 -   There are 70 Canadian seeds, 70 Kama seeds and 70 Rosa seeds.
@@ -133,7 +137,7 @@ nCol <- floor(sqrt(n))
 do.call("grid.arrange", c(plist, ncol=nCol))
 ```
 
-![](EDA_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](Figs/unnamed-chunk-7-1.png)<!-- -->
 
 -   In each plot, yellow, blue and pink graph each represents density
     distribution of Canadian, Kama and Rosa seeds respectively.
@@ -156,7 +160,7 @@ levelplot(dist, colorkey=T, col.regions = coul,
           xlab="", ylab="", main="Euclidean distance of all continuous samples")
 ```
 
-![](EDA_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](Figs/unnamed-chunk-8-1.png)<!-- -->
 
 This heatmap shows 210\*210 matrix in which element in n<sup>th</sup>
 row and m<sup>th</sup> column represents the euclidean distance between
@@ -193,7 +197,7 @@ ggplot(seeds, aes(variety, fill=flag)) +
   labs(title="Count of variety of seeds", subtitle = "divided out by 'flag'") 
 ```
 
-![](EDA_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+![](Figs/unnamed-chunk-9-1.png)<!-- -->
 
 -   Canadian: Area of all the 70 samples are smaller than 15.
 -   Kama : 50 samples have area smaller than 15. 20 samples have area
@@ -216,7 +220,7 @@ ggplot(seeds, aes(x=length.of.kernel, y=width.of.kernel,
        y = "Width of kernel", x = "Length of Kernel")
 ```
 
-![](EDA_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](Figs/unnamed-chunk-10-1.png)<!-- -->
 
 -   Red, green and blue points represent Canadian, Kama and Rosa seeds
     respectively.
@@ -242,7 +246,7 @@ ggplot(seeds,
   facet_wrap(~ variety, scales = "free_y")
 ```
 
-![](EDA_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+![](Figs/unnamed-chunk-11-1.png)<!-- -->
 
 -   Multipanel plot with one panel per “variety”
 -   Each panel shows width of kernel against length of kernel graph for
@@ -365,7 +369,7 @@ nCol <- floor(sqrt(n))
 do.call("grid.arrange", c(plist, ncol=nCol))
 ```
 
-![](EDA_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
+![](Figs/unnamed-chunk-16-1.png)<!-- -->
 
 -   Box plot distribution of all the attributes are generated.
 -   “chas” only consists of 0’s and 1’s.
@@ -396,13 +400,13 @@ nCol <- floor(sqrt(n))
 do.call("grid.arrange", c(plist, ncol=nCol))
 ```
 
-![](EDA_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
+![](Figs/unnamed-chunk-17-1.png)<!-- -->
 
 ``` r
 corrplot(cor(boston))
 ```
 
-![](EDA_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
+![](Figs/unnamed-chunk-18-1.png)<!-- -->
 
 -   As you can see in the correlation plot above, lstat has the highest
     (negative) correlation with medv. Also rm seems to have the highest
@@ -586,7 +590,7 @@ ggplot(residuals, aes(x=Residuals)) +
   ggtitle('Histogram of Residuals') 
 ```
 
-![](EDA_files/figure-gfm/unnamed-chunk-23-1.png)<!-- -->
+![](Figs/unnamed-chunk-23-1.png)<!-- -->
 
 Multivariate normality: The residuals can be considered as normally
 distributed according to the histogram above.
@@ -597,7 +601,7 @@ distributed according to the histogram above.
 plot(lm_3, col='Blue')
 ```
 
-![](EDA_files/figure-gfm/unnamed-chunk-24-1.png)<!-- -->![](EDA_files/figure-gfm/unnamed-chunk-24-2.png)<!-- -->![](EDA_files/figure-gfm/unnamed-chunk-24-3.png)<!-- -->![](EDA_files/figure-gfm/unnamed-chunk-24-4.png)<!-- -->
+![](Figs/unnamed-chunk-24-1.png)<!-- -->![](Figs/unnamed-chunk-24-2.png)<!-- -->![](Figs/unnamed-chunk-24-3.png)<!-- -->![](Figs/unnamed-chunk-24-4.png)<!-- -->
 
 Homoscedasticity: Variance of error terms are similar across the values
 of the independent variables. A plot of standardized residuals versus
@@ -746,7 +750,7 @@ ggplot(tmp, aes(x=class)) + geom_bar(fill="steelblue")+
   facet_wrap(~year)
 ```
 
-![](EDA_files/figure-gfm/unnamed-chunk-32-1.png)<!-- --> \*\*\*
+![](Figs/unnamed-chunk-32-1.png)<!-- --> \*\*\*
 
 ## Attributes affected by manufacturer?
 
@@ -767,7 +771,7 @@ ggplot(mpg,
   facet_wrap(~class)
 ```
 
-![](EDA_files/figure-gfm/unnamed-chunk-33-1.png)<!-- -->
+![](Figs/unnamed-chunk-33-1.png)<!-- -->
 
 On the other hand, the set of box plots below shows the relationship
 between continuous variable (eg.displ) and categorical variable
@@ -787,4 +791,4 @@ ggplot(mpg,
         axis.ticks.x=element_blank())
 ```
 
-![](EDA_files/figure-gfm/unnamed-chunk-34-1.png)<!-- -->
+![](Figs/unnamed-chunk-34-1.png)<!-- -->
