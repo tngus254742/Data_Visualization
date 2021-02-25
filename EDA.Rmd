@@ -1,0 +1,563 @@
+---
+title: 'Explanatory Data Analysis with various visualizations (ggplot2)'
+author: 'Choi Suhyun'
+date: 'February 25, 2021'
+output: github_document
+
+---
+
+***Choi Suhyun***
+
+---
+
+\newpage
+
+**Import Libraries**
+```{r}
+library(knitr)
+library(ggplot2)
+library(gridExtra)
+library(lattice)
+library(RColorBrewer)
+library(reshape2)
+library(corrplot)
+library(dplyr)
+```
+
+\newpage
+
+# seeds.txt
+
+```{r}
+seeds = read.delim2("/Users/hailey/Desktop/STAT3622/Assignment 1/seeds.txt",
+                    sep =',')
+kable(head(seeds, 5))
+```
+
+
+
+```{r}
+summary(seeds)
+```
+
+
+
+```{r}
+#Changing data type of attributes to "numeric" 
+i <- c(1:7)
+seeds[ , i] <- apply(seeds[ , i], 2,            
+                    function(x) as.numeric(as.character(x)))
+```
+
+
+
+```{r}
+str(seeds)
+```
+
+\newpage
+
+## Distribution of 'variety'
+
+
+**a) Visualize the distribution for the categorical attribute “variety”.**
+
+
+
+```{r,fig.width=5, fig.height=3}
+
+ggplot(seeds, aes(variety, fill=variety)) + geom_bar(colour="black", size=0.5, 
+                                                     width=0.5, alpha=0.7) +
+  scale_fill_manual(values = c("yellow","skyblue","pink")) +
+  geom_text(stat='count', aes(label=..count..),color="black", vjust=1.6) 
+
+```
+
+
+* There are three types of seeds, that are Canadian, Kama and Rosa.
+* There are 70 Canadian seeds, 70 Kama seeds and 70 Rosa seeds. Therefore, there are 210 seeds in total.
+
+***
+
+## Distributional difference among varieties of seeds
+
+
+**b) Visualize the distributional difference for each continuous attribute among three varieties of seeds.**
+
+
+
+
+```{r, fig.height=8, fig.width=8}
+
+plist <- list()
+for (i in 1:7){
+plist[[length(plist)+1]] <- ggplot(data=seeds, aes_string(names(seeds)[i], 
+                                                        fill=names(seeds)[8])) +
+  geom_density(size=1, alpha=0.4) + 
+  scale_fill_manual( values = c("yellow","skyblue","pink"))
+}
+
+n <- length(plist)
+nCol <- floor(sqrt(n))
+do.call("grid.arrange", c(plist, ncol=nCol))
+```
+
+* In each plot, yellow, blue and pink graph each represents density distribution of Canadian, Kama and Rosa seeds respectively. 
+
+* For example, most of the Rosa seeds have larger area than most of the Canadian seeds.
+
+
+
+*** 
+
+## Euclidean distance matrix
+
+
+**c) Visualize the Euclidean distance matrix of samples involving all continuous attributes by the heatmap.**
+
+
+```{r}
+dist = as.matrix(dist(seeds[,0:7], method='euclidean'))
+coul <- colorRampPalette(brewer.pal(8, "PiYG"))(25)
+levelplot(dist, colorkey=T, col.regions = coul,
+          scales = list(at=c(0,0),tck=c(0,0)),
+          xlab="", ylab="", main="Euclidean distance of all continuous samples")
+```
+
+
+
+This heatmap shows 210*210 matrix in which element in n^th^ row and m^th^ column represents the euclidean distance between n^th^ sample and m^th^ sample. In mathematics, the Euclidean distance between two points in Euclidean space is the length of a line segment between the two points, which can be calculated as:
+
+$$d(p,q) = \sqrt{\sum_{i=1}^{n} (q_i-p_i)^2}$$
+*where $p,q$	=	two points in Euclidean n-space, \
+$q_i, p_i$=	Euclidean vectors, starting from the origin of the space (initial point), \
+$n$	=	n-space* \ 
+
+The color in the heatmap represents the value of the euclidean distance, as shown in the color label beside the heatmap. The diagonal line in the heatmap is generated as euclidean distance between a point and itself is 0. 
+
+
+
+***
+
+## Flag (area>15)
+
+
+**d) Create a new variable “flag”, which takes the value “True” if the “area” is larger than 15, and “False”, otherwise. Show a stacked bar graph of the sample size for each variety of seeds and how they are further divided out by “flag”.**
+
+
+
+```{r, fig.width=5, fig.height=3}
+seeds$flag = seeds$area>15
+ggplot(seeds, aes(variety, fill=flag)) + 
+  geom_bar(size=0.5, colour="black",position = "stack", alpha=0.7, width=0.5) +
+  scale_fill_manual("Area > 15", 
+                    values = c("TRUE" = "orange", "FALSE" = "darkgreen")) + 
+  labs(title="Count of variety of seeds", subtitle = "divided out by 'flag'") 
+
+```
+
+
+* Canadian: Area of all the 70 samples are smaller than 15.
+* Kama : 50 samples have area smaller than 15. 20 samples have area larger than 15.
+* Rosa  : Area of all the 70 samples are larger than 15.
+
+
+
+***
+
+## Scattered plot of length.of.kernel and width.of.kernel
+
+
+**(e) Show the scattered graph for “length.of.kernel” (x-axis) and “width.of.kernel” (y-axis) of all samples, where the colors of points indicate the varieties of seeds.**
+
+
+
+```{r, fig.width=6, fig.height=4}
+ggplot(seeds, aes(x=length.of.kernel, y=width.of.kernel, 
+                  colour=variety, shape=variety)) + 
+  geom_point() + labs(title = "Scattered Plot",
+       subtitle = "Width of kernel against Length of kernel",
+       y = "Width of kernel", x = "Length of Kernel")
+```
+
+
+
+* Red, green and blue points represent Canadian, Kama and Rosa seeds respectively.
+* All the points are linearly positively correlated, which implies that width of kernel increases (approximately) proportionally with length of kernel.
+* Canadian seeds have relatively smaller width and length of kernel while Rosa seeds have relatively larger length and width of kernel.
+
+
+
+***
+
+
+## Multipanel scattered plot of length.of.kernel and width.of.kernel
+
+
+**(f) Show the multipanel scattered plots for “length.of.kernel” (x-axis) and “width.of.kernel” (y-axis) conditional on “variety”.**
+
+
+
+```{r}
+ggplot(seeds, 
+       aes(x=length.of.kernel, y=width.of.kernel, colour=variety, shape=variety)) + 
+  geom_point() + labs(title = "Multipanel Scattered Plot",
+       subtitle = "Width of kernel against Length of kernel",
+       y = "Width of kernel", x = "Length of Kernel") +
+  facet_wrap(~ variety, scales = "free_y")
+```
+
+
+* Multipanel plot with one panel per "variety"
+* Each panel shows width of kernel against length of kernel graph for each variety of seeds.
+
+
+
+\newpage
+
+# Boston.txt
+
+
+**List of variables**
+1. crim — per capita crime rate by town
+2. zn — proportion of residential land zoned for lots over 25,000 sq.ft
+3. indus — proportion of non-retail business acres per town
+4. chas — Charles River dummy variable (= 1 if tract bounds river; 0 otherwise)
+5. nox — nitric oxides concentration (parts per 10 million)
+6. rm — average number of rooms per dwelling
+7. age — proportion of owner-occupied units built prior to 1940
+8. dis — weighted distances to five Boston employment centres
+9. rad — index of accessibility to radial highways
+10. tax — full-value property-tax rate per USD 10,000
+11. ptratio — pupil-teacher ratio by town
+12. black — proportion of blacks by town
+13. lstat — percentage of lower status of the population
+14. medv — median value of owner-occupied homes in USD 1000’s
+
+
+*All the variables are continuous except "chas" and "rad".*
+
+
+
+```{r}
+options(max.col=20)
+boston = read.delim2("/Users/hailey/Desktop/STAT3622/Assignment 1/Boston.txt",
+                     sep =',')
+kable(head(boston, 5))
+```
+
+
+
+```{r}
+str(boston)
+```
+
+Data types of all variables except "chad" and "rad" need to be changed to numeric for further analysis. "chas" and "rad" can be left as integer type since they are categorical variables.
+
+
+
+
+```{r}
+# Changing "character" to "numeric" type
+i <- c(1,2,3,5,6,7,8,10,11,12,13,14)
+boston[ , i] <- apply(boston[ , i], 2,            
+                    function(x) as.numeric(as.character(x)))
+```
+
+
+```{r}
+summary(boston)
+```
+
+
+Minimum and maximum values and interquartile ranges of 14 variables are shown above. 
+
+*** 
+
+## Distribution of attributes
+
+
+**(a) Visualize the distribution for all attributes.**
+
+
+
+```{r, fig.height=10, fig.width=8}
+
+plist <- list()
+for (i in 1:14){
+plist[[length(plist)+1]] <- ggplot(data=boston, aes_string(names(boston)[i])) + 
+  geom_boxplot(fill = "darkgreen", alpha=0.6 , outlier.colour = "red")
+}
+
+n <- length(plist)
+nCol <- floor(sqrt(n))
+do.call("grid.arrange", c(plist, ncol=nCol))
+
+```
+
+
+* Box plot distribution of all the attributes are generated.
+* "chas" only consists of 0's and 1's.
+* Red points represent outliers. For example, variable "crim", "zn", "b" and "medv" have many outliers.
+* "crim", "zn", "dis", "rad", "tax"... are positively skewed.
+* "age","b",.. are negatively skewed.
+* Target variable "medv" has approximately symmetrical distribution.
+
+***
+
+## Relationship between attributes and "medv"
+
+
+
+**(b) Visualize the relationship between the variable “medv” and any other attribute. Which attributes may have impacts on the median values of owner-occupied homes (“medv”)?**
+
+
+
+```{r, fig.height=11, fig.width=7}
+
+plist <- list()
+for (i in 1:13){
+plist[[length(plist)+1]] <- ggplot(data=boston, aes_string(names(boston)[i], 
+                                                           names(boston)[14])) +
+  geom_point(size=0.4, color="darkblue")
+}
+
+n <- length(plist)
+nCol <- floor(sqrt(n))
+do.call("grid.arrange", c(plist, ncol=nCol))
+```
+
+
+```{r}
+corrplot(cor(boston))
+```
+
+
+* As you can see in the correlation plot above, lstat has the highest (negative) correlation with medv. Also rm seems to have the highest (positive) correlation with medv. These are also shown in the scatter plot of medv against lstat and rm. 
+* According to the correlation plot, indus and ptratio have relatively high (negative) correlation with medv as well. 
+* 5 attributes are positively correlated to medv while 8 attributes are negatively correlated to medv.
+
+***
+
+## Linear regression model
+**(c) Fit a linear regression model,where the response variableis “medv” (transformation is allowed). You can choose a subset of attributes or create new attributes as covariates. Interpret the resulting model.**
+
+
+First, divide the data into train and test sets.
+
+
+```{r}
+set.seed(12)
+
+boston$id <- 1:nrow(boston)
+train <- boston %>% dplyr::sample_frac(.75)
+test  <- dplyr::anti_join(boston, train, by = 'id')
+
+dim(train)
+dim(test)
+```
+
+
+
+Fit the linear regression model with all the attributes excluding 15th column of train data (id). 
+
+
+
+```{r}
+lm_1 <- lm(medv~.,data=train[,1:14])
+summary(lm_1)
+```
+
+
+* The F-test for linear regression tests whether any of the independent variables in a multiple linear regression model are significant. R-squared measures the proportion of variation in the dependent variable that can be attributed to the independent variable. 
+* Fitting all the variables gives **F-statistic: 87.55** and **R-squared: 0.7567**.
+* indus, age and b are removed from the train dataset since they have high P(>|t|) value and thus are not significant. 
+
+
+
+
+```{r}
+lm_2 <- lm(medv~.-age-indus-b,data=train[,1:14])
+summary(lm_2)
+```
+* After removing indus, age and b, F-statistics **increased to 111.8** and R-squared **decreased to 0.7519**.
+* Adding Interaction variables between the significant variables could give us a better model.
+
+
+
+```{r}
+lm_3 <- lm(medv~.-age-indus-b+ rm*lstat + rm*ptratio + 
+             lstat*ptratio,data=train[,1:14])
+summary(lm_3)
+```
+
+
+* Adding rm:lstat, rm:ptratio and ptratio:lstat improved the goodness of fit.
+* **F-statistic: 148.9** and **R-squared: 0.841**
+
+
+***
+
+
+## Assumptions for linear regression
+**(d) Using plots to check whether the model in (c) satisfies the assumptions for linear regression. Interpret the results.**
+
+
+
+```{r, fig.width=5}
+#Multivariate Normality
+
+residuals <- data.frame('Residuals' = lm_3$residuals)
+ggplot(residuals, aes(x=Residuals)) + 
+  geom_histogram(binwidth=0.5, color='black', fill='red', alpha=0.6) + 
+  ggtitle('Histogram of Residuals') 
+
+```
+
+
+Multivariate normality: The residuals can be considered as normally distributed according to the histogram above. 
+
+
+
+```{r}
+#No multicollinearity
+
+plot(lm_3, col='Blue')
+
+```
+
+
+Homoscedasticity: Variance of error terms are similar across the values of the independent variables.  A plot of standardized residuals versus predicted values can show whether points are equally distributed across all values of the independent variables.
+
+\newpage
+
+# mpg.txt
+
+A data frame with 234 rows and 11 variables:
+
+```{r}
+head(mpg)
+```
+```{r}
+str(mpg)
+```
+
+*** 
+
+## Average displacement for each year
+**(a) Display a table of the average displacement (“displ”) for each year.**
+
+```{r}
+unique(mpg$year)
+```
+
+```{r}
+mpg_year <- split(mpg, mpg$year)
+mean1 <- mean(mpg_year$`1999`$displ)
+mean2 <- mean(mpg_year$`2008`$displ)
+
+year <- c("1999","2008")
+mean_displ <- c(mean1, mean2)
+
+df <- data.frame(year,mean_displ)
+kable(df)
+```
+
+***
+
+## Median highway mileage per year
+**(b) Display a table of the median highway mileage (“hwy”) per year for each type of car.**
+
+
+
+```{r}
+unique(mpg$class)
+```
+
+
+```{r}
+mpg_99 <- split(mpg_year$`1999`, mpg_year$`1999`$class)
+med_99 <- c(median(mpg_99[[1]][["hwy"]]),median(mpg_99[[2]][["hwy"]]),
+            median(mpg_99[[3]][["hwy"]]),median(mpg_99[[4]][["hwy"]]),
+            median(mpg_99[[5]][["hwy"]]),median(mpg_99[[6]][["hwy"]]),
+            median(mpg_99[[7]][["hwy"]]))
+mpg_08 <- split(mpg_year$`2008`, mpg_year$`2008`$class)
+med_08 <- c(median(mpg_08[[1]][["hwy"]]),median(mpg_08[[2]][["hwy"]]),
+            median(mpg_08[[3]][["hwy"]]),median(mpg_08[[4]][["hwy"]]),
+            median(mpg_08[[5]][["hwy"]]),median(mpg_08[[6]][["hwy"]]),
+            median(mpg_08[[7]][["hwy"]]))
+
+med <- data.frame(med_99, med_08)
+rownames(med) <- c(unique(mpg$class))
+colnames(med) <- c("Median hwy in 1999","Median hwy in 2008")
+med
+```
+
+***
+
+## displ and cyl in descending order
+**(c) Display the first five observations in descending order by two attributes, displacement (“displ”) and number of cylinders (“cyl”).**
+
+
+
+```{r}
+head(arrange(mpg, desc(displ), desc(cyl)),5)
+```
+
+
+***
+
+
+## cyl > 4 and fl == "r"
+
+
+**(d) Visualize the number of samples for each type of car per year with number of cylinders larger than 4 and fuel type equal to “r”.**
+
+
+
+```{r}
+tmp = filter(mpg, cyl>4 & fl=="r")
+ggplot(tmp, aes(x=class)) + geom_bar(fill="steelblue")+ 
+  geom_text(stat='count', aes(label=..count..),color="white", vjust=1.6) +
+  ggtitle("Samples with number of cylinders larger than 4 and fuel type equal to 'r'") +  
+  theme(plot.title = element_text(hjust = 0.5)) +
+  facet_wrap(~year)
+```
+***
+
+## Attributes affected by manufacturer?
+
+**(e) Given the type of car, the attributes could also be affected by the manufacturer. Explore graphically if this is the case.**
+
+
+The relationship between two categorical variables can be visualized with stacked barplot. For example, relationship between "fl" and "manufacturer" is shown below. For each type of car, each barplot represents the count of certain fuel type. We can see that cars with fuel type "r" have the most diversified manufacturer. 
+
+
+
+```{r, fig.height=10, fig.width=10}
+ggplot(mpg, 
+       aes(x = fl, 
+           fill = manufacturer)) + 
+  geom_bar(position = "stack") +
+  facet_wrap(~class)
+```
+
+
+On the other hand, the set of box plots below shows the relationship between continuous variable (eg.displ) and categorical variable (eg.manufacturer). For example, midsize cars manufactured by Pontiac have some outliers in engine displacement in liters (displ). Also for subcompact cars, cars manufactured by Ford have the highest engine displacement among them.
+
+
+
+```{r, fig.height=8, fig.width=8}
+ggplot(mpg, 
+       aes(y = displ, 
+           x = manufacturer,
+           color = manufacturer)) + 
+  geom_boxplot() +
+  facet_wrap(~class) +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+```
+
+
+
+
